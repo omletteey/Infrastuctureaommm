@@ -1,16 +1,5 @@
 # GCP Backend Configuration
 terraform {
-  backend "gcs" {
-    bucket = "terraform-state-gcp-aom"
-    prefix = "gcp/terraform/state"
-    
-    # Use workspaces for different environments
-    # State files will be stored as: gcp/terraform/state/env:/terraform.tfstate
-  }
-}
-
-# Provider version constraints
-terraform {
   required_version = ">= 1.6.0"
   
   required_providers {
@@ -27,6 +16,14 @@ terraform {
       version = "~> 3.1"
     }
   }
+  
+  backend "gcs" {
+    bucket = "terraform-state-gcp-aom"
+    prefix = "gcp/terraform/state"
+    
+    # Use workspaces for different environments
+    # State files will be stored as: gcp/terraform/state/env:/terraform.tfstate
+  }
 }
 
 # Generate random suffix for unique bucket naming
@@ -41,15 +38,15 @@ data "google_client_config" "current" {}
 
 # Configure Google Provider
 provider "google" {
-  project = var.gcp_project_id
-  region  = var.gcp_region
-  zone    = var.gcp_zone
+  project     = "phrasal-aegis-376702"  # Using specific project from main.tf
+  region      = "asia-southeast1"       # Using specific region from main.tf
+  credentials = file("./phrasal-aegis-376702-3d80e548507d.json")
 }
 
 provider "google-beta" {
-  project = var.gcp_project_id
-  region  = var.gcp_region
-  zone    = var.gcp_zone
+  project     = "phrasal-aegis-376702"  # Using specific project from main.tf
+  region      = "asia-southeast1"       # Using specific region from main.tf
+  credentials = file("./phrasal-aegis-376702-3d80e548507d.json")
 }
 
 # Variables

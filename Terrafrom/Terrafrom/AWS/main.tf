@@ -1,6 +1,4 @@
-provider "aws" {
-  region = "ap-southeast-1"
-}
+# Provider configuration is managed in backend.tf
 
 # Get available AZs
 data "aws_availability_zones" "available" {

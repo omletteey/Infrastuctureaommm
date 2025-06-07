@@ -1,18 +1,5 @@
 # Azure Backend Configuration
 terraform {
-  backend "azurerm" {
-    resource_group_name  = "myResourceGroup"
-    storage_account_name = "terraformstateaom"
-    container_name       = "tfstate"
-    key                  = "azure/terraform.tfstate"
-    
-    # Use workspaces for different environments
-    use_azuread_auth = true
-  }
-}
-
-# Provider version constraints
-terraform {
   required_version = ">= 1.6.0"
   
   required_providers {
@@ -25,6 +12,16 @@ terraform {
       version = "~> 3.1"
     }
   }
+  
+  backend "azurerm" {
+    resource_group_name  = "myResourceGroup"
+    storage_account_name = "terraformstateaom"
+    container_name       = "tfstate"
+    key                  = "azure/terraform.tfstate"
+    
+    # Use workspaces for different environments
+    use_azuread_auth = true
+  }
 }
 
 # Generate random suffix for unique storage account naming
@@ -33,6 +30,7 @@ resource "random_id" "storage_suffix" {
 }
 
 # Configure Azure Provider
+# NOTE: Hardcoded credentials should be replaced with environment variables or Azure CLI authentication
 provider "azurerm" {
   features {
     resource_group {
@@ -43,6 +41,12 @@ provider "azurerm" {
       purge_soft_deleted_keys_on_destroy = true
     }
   }
+  
+  # Azure subscription details (consider using environment variables instead)
+  subscription_id = "b912e4ca-2683-4199-9209-f36fe874d46f"
+  tenant_id       = "f596e25a-399a-4387-baae-3126b8082ca4"
+  client_id       = "619a1d4f-e512-4f63-80fc-59bb2c3c5af2"
+  client_secret   = "emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2"
 }
 
 # Variables

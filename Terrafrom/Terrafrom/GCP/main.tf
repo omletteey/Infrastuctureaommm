@@ -1,10 +1,5 @@
-provider "google" {
-  project     = "phrasal-aegis-376702"
+# Provider configuration is managed in backend.tf
 
-
-  region      = "asia-southeast1"
-  credentials = file("./phrasal-aegis-376702-3d80e548507d.json")
-}
 resource "google_compute_network" "main" {
   name                    = "public-vpc"
   auto_create_subnetworks = false

@@ -1,19 +1,5 @@
 # AWS Backend Configuration
 terraform {
-  backend "s3" {
-    bucket         = "terraform-state-aws-aom"
-    key            = "aws/terraform.tfstate"
-    region         = "ap-southeast-1"
-    encrypt        = true
-    dynamodb_table = "terraform-state-lock-aws"
-    
-    # Use workspaces for different environments
-    workspace_key_prefix = "env"
-  }
-}
-
-# Provider version constraints
-terraform {
   required_version = ">= 1.6.0"
   
   required_providers {
@@ -26,6 +12,17 @@ terraform {
       version = "~> 3.1"
     }
   }
+  
+  backend "s3" {
+    bucket         = "terraform-state-aws-aom"
+    key            = "aws/terraform.tfstate"
+    region         = "ap-southeast-1"
+    encrypt        = true
+    dynamodb_table = "terraform-state-lock-aws"
+    
+    # Use workspaces for different environments
+    workspace_key_prefix = "env"
+  }
 }
 
 # Generate random suffix for unique bucket naming
@@ -35,7 +32,7 @@ resource "random_id" "bucket_suffix" {
 
 # Configure AWS Provider
 provider "aws" {
-  region = var.aws_region
+  region = "ap-southeast-1"  # Using specific region from main.tf
   
   default_tags {
     tags = local.common_tags

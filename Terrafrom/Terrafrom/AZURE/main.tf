@@ -1,21 +1,6 @@
 
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-  }
-  required_version = ">= 1.0"
-}
-
-provider "azurerm" {
-  features {}
-  subscription_id = "b912e4ca-2683-4199-9209-f36fe874d46f"
-  tenant_id       = "f596e25a-399a-4387-baae-3126b8082ca4"
-  client_id       = "619a1d4f-e512-4f63-80fc-59bb2c3c5af2"
-  client_secret   = "emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2"
-}
+# Terraform configuration is managed in backend.tf
+# Provider configuration is managed in backend.tf
 
 # Resource Group
 resource "azurerm_resource_group" "main" {
