@@ -149,12 +149,11 @@ jobs:
 
       - name: Configure Azure credentials
         if: matrix.cloud_provider == 'AZURE'
-        uses: azure/login@v1
-        with:
-          client-id: "619a1d4f-e512-4f63-80fc-59bb2c3c5af2"
-          client-secret: "emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2"
-          tenant-id: "f596e25a-399a-4387-baae-3126b8082ca4"
-          subscription-id: "b912e4ca-2683-4199-9209-f36fe874d46f"
+        run: |
+          echo "ARM_CLIENT_ID=619a1d4f-e512-4f63-80fc-59bb2c3c5af2" >> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=f596e25a-399a-4387-baae-3126b8082ca4" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=b912e4ca-2683-4199-9209-f36fe874d46f" >> $GITHUB_ENV
 
       - name: Configure GCP credentials
         if: matrix.cloud_provider == 'GCP'
@@ -243,9 +242,11 @@ jobs:
 
       - name: Configure Azure credentials
         if: matrix.cloud_provider == 'AZURE'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "ARM_CLIENT_ID=619a1d4f-e512-4f63-80fc-59bb2c3c5af2" >> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=f596e25a-399a-4387-baae-3126b8082ca4" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=b912e4ca-2683-4199-9209-f36fe874d46f" >> $GITHUB_ENV
 
       - name: Configure GCP credentials
         if: matrix.cloud_provider == 'GCP'
@@ -301,9 +302,11 @@ jobs:
 
       - name: Configure Azure credentials
         if: matrix.cloud_provider == 'AZURE'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CRED }}
+        run: |
+          echo "ARM_CLIENT_ID=619a1d4f-e512-4f63-80fc-59bb2c3c5af2" >> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=f596e25a-399a-4387-baae-3126b8082ca4" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=b912e4ca-2683-4199-9209-f36fe874d46f" >> $GITHUB_ENV
 
       - name: Configure GCP credentials
         if: matrix.cloud_provider == 'GCP'
@@ -390,9 +393,11 @@ jobs:
 
       - name: Configure Azure credentials
         if: matrix.cloud_provider == 'AZURE'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "ARM_CLIENT_ID=619a1d4f-e512-4f63-80fc-59bb2c3c5af2" >> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=f596e25a-399a-4387-baae-3126b8082ca4" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=b912e4ca-2683-4199-9209-f36fe874d46f" >> $GITHUB_ENV
 
       - name: Configure GCP credentials
         if: matrix.cloud_provider == 'GCP'

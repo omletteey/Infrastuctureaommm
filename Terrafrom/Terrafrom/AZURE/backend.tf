@@ -20,7 +20,7 @@ terraform {
     key                  = "azure/terraform.tfstate"
     
     # Use workspaces for different environments
-    use_azuread_auth = true
+    # Remove use_azuread_auth to allow Service Principal authentication
   }
 }
 
@@ -30,7 +30,7 @@ resource "random_id" "storage_suffix" {
 }
 
 # Configure Azure Provider
-# NOTE: Hardcoded credentials should be replaced with environment variables or Azure CLI authentication
+# Authentication will be handled through environment variables or Azure CLI
 provider "azurerm" {
   features {
     resource_group {
