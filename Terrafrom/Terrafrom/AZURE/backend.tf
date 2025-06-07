@@ -37,9 +37,9 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
     
-    storage {
-      purge_soft_deleted_keys_on_destroy = true
-    }
+    # storage {
+    #   purge_soft_deleted_keys_on_destroy = true
+    # }
   }
   
   # Azure subscription details (consider using environment variables instead)
