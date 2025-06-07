@@ -37,16 +37,17 @@ data "google_project" "current" {}
 data "google_client_config" "current" {}
 
 # Configure Google Provider
+# Authentication will be handled through environment variables or service account key
 provider "google" {
-  project     = "phrasal-aegis-376702"  # Using specific project from main.tf
-  region      = "asia-southeast1"       # Using specific region from main.tf
-  credentials = file("./phrasal-aegis-376702-3d80e548507d.json")
+  project = "phrasal-aegis-376702"  # Using specific project from main.tf
+  region  = "asia-southeast1"       # Using specific region from main.tf
+  # credentials will be provided via GOOGLE_CREDENTIALS environment variable in CI/CD
 }
 
 provider "google-beta" {
-  project     = "phrasal-aegis-376702"  # Using specific project from main.tf
-  region      = "asia-southeast1"       # Using specific region from main.tf
-  credentials = file("./phrasal-aegis-376702-3d80e548507d.json")
+  project = "phrasal-aegis-376702"  # Using specific project from main.tf
+  region  = "asia-southeast1"       # Using specific region from main.tf
+  # credentials will be provided via GOOGLE_CREDENTIALS environment variable in CI/CD
 }
 
 # Variables
@@ -209,7 +210,7 @@ resource "google_secret_manager_secret" "terraform_sa_key" {
   secret_id = "terraform-service-account-key"
   
   replication {
-    automatic = true
+    auto {}
   }
   
   labels = local.common_labels
