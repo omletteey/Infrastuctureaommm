@@ -163,14 +163,28 @@ jobs:
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        run: |
+          echo "🔧 Initializing Terraform..."
+          terraform init
+          echo "✅ Terraform initialization completed"
         working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false -out=tfplan
+        run: |
+          echo "📋 Starting Terraform plan..."
+          terraform plan -no-color -input=false -out=tfplan
+          echo "✅ Terraform plan completed"
         working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
-        continue-on-error: true
+
+      - name: Verify Plan File
+        run: |
+          if [ ! -f tfplan ]; then
+            echo "❌ Plan file not generated"
+            exit 1
+          fi
+          echo "✅ Plan file generated successfully"
+        working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
 
       - name: Save Plan Output
         run: terraform show -no-color tfplan > tfplan.txt
@@ -259,6 +273,18 @@ jobs:
         with:
           name: terraform-plan-${{ matrix.cloud_provider }}
           path: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
+
+      - name: Verify Downloaded Plan
+        run: |
+          if [ ! -f tfplan ]; then
+            echo "❌ Plan file not found after download"
+            echo "Contents of current directory:"
+            ls -la
+            exit 1
+          fi
+          echo "✅ Plan file found and ready for apply"
+          echo "Plan file size: $(du -h tfplan)"
+        working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
 
       - name: Terraform Init
         run: terraform init
