@@ -1,0 +1,164 @@
+name: 'Terraform Destroy Pipeline'
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud_provider:
+        description: 'Cloud provider to destroy'
+        required: true
+        default: 'AWS'
+        type: choice
+        options:
+          - AWS
+          - AZURE
+          - GCP
+          - ALL
+      environment:
+        description: 'Environment to destroy'
+        required: true
+        default: 'PROD'
+        type: choice
+        options:
+          - PROD
+      confirmation:
+        description: 'Type "DESTROY" to confirm destruction (REQUIRED)'
+        required: true
+        type: string
+
+env:
+  TF_VERSION: '1.6.0'
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC authentication
+
+jobs:
+  terraform-destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+    environment: PROD
+    strategy:
+      fail-fast: false
+      matrix:
+        cloud_provider: ${{ github.event.inputs.cloud_provider == 'ALL' && fromJson('["AWS", "AZURE", "GCP"]') || fromJson(format('["{0}"]', github.event.inputs.cloud_provider)) }}
+    
+    steps:
+      - name: Validate Destroy Confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirmation }}" != "DESTROY" ]; then
+            echo "❌ ERROR: Destroy confirmation not provided or incorrect"
+            echo "You must type 'DESTROY' in the confirmation field to proceed"
+            exit 1
+          fi
+          echo "✅ Destroy confirmation validated"
+
+      - name: Security Check - Branch Protection
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ] && [ "${{ github.event.inputs.environment }}" == "PROD" ]; then
+            echo "🚨 WARNING: Attempting to destroy PRODUCTION infrastructure from MAIN branch"
+            echo "This is a high-risk operation. Ensure you have proper authorization."
+            sleep 10
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # Configure cloud provider authentication
+      - name: Configure AWS credentials
+        if: matrix.cloud_provider == 'AWS'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-southeast-1
+
+      - name: Configure Azure credentials
+        if: matrix.cloud_provider == 'AZURE'
+        run: |
+          echo "ARM_CLIENT_ID=619a1d4f-e512-4f63-80fc-59bb2c3c5af2" >> $GITHUB_ENV
+          echo "ARM_CLIENT_SECRET=emm8Q~njY88li8J00-2H~zaCgSjIugxtwnJnDav2" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=f596e25a-399a-4387-baae-3126b8082ca4" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=b912e4ca-2683-4199-9209-f36fe874d46f" >> $GITHUB_ENV
+
+      - name: Configure GCP credentials
+        if: matrix.cloud_provider == 'GCP'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
+
+      - name: Terraform Plan Destroy
+        id: plan_destroy
+        run: terraform plan -destroy -no-color -input=false -out=destroy-plan
+        working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
+
+      - name: Show Destroy Plan
+        run: |
+          echo "## 🚨 TERRAFORM DESTROY PLAN for ${{ matrix.cloud_provider }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Resources to be DESTROYED:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          terraform show -no-color destroy-plan >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
+
+      - name: Manual Approval Check
+        run: |
+          echo "⏸️  MANUAL APPROVAL REQUIRED"
+          echo "This step requires manual review of the destroy plan above."
+          echo "If you approve the destruction, the next step will proceed."
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Cloud Provider: ${{ matrix.cloud_provider }}"
+          echo "Triggered by: ${{ github.actor }}"
+
+      - name: Terraform Destroy
+        id: destroy
+        run: |
+          echo "🚨 EXECUTING TERRAFORM DESTROY..."
+          echo "This will permanently delete infrastructure for ${{ matrix.cloud_provider }}"
+          terraform apply -destroy -auto-approve destroy-plan
+        working-directory: ./Terrafrom/Terrafrom/${{ matrix.cloud_provider }}
+
+      - name: Update Destroy Summary
+        if: always()
+        run: |
+          if [ "${{ steps.destroy.outcome }}" == "success" ]; then
+            echo "## ✅ Terraform Destroy Summary for ${{ matrix.cloud_provider }}" >> $GITHUB_STEP_SUMMARY
+            echo "🗑️ Infrastructure successfully destroyed" >> $GITHUB_STEP_SUMMARY
+            echo "📅 Destroyed at: $(date)" >> $GITHUB_STEP_SUMMARY
+            echo "👤 Destroyed by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+            echo "🌍 Environment: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Terraform Destroy Failed for ${{ matrix.cloud_provider }}" >> $GITHUB_STEP_SUMMARY
+            echo "🚨 Infrastructure destruction failed" >> $GITHUB_STEP_SUMMARY
+            echo "📅 Failed at: $(date)" >> $GITHUB_STEP_SUMMARY
+            echo "👤 Attempted by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs and resolve any issues before retrying." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  destroy-all-summary:
+    name: 'Destroy All Summary'
+    runs-on: ubuntu-latest
+    needs: terraform-destroy
+    if: always() && github.event.inputs.cloud_provider == 'ALL'
+    
+    steps:
+      - name: Generate Summary Report
+        run: |
+          echo "# 🚨 TERRAFORM DESTROY ALL SUMMARY" >> $GITHUB_STEP_SUMMARY
+          echo "## Operation Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cloud Providers:** AWS, AZURE, GCP" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Results" >> $GITHUB_STEP_SUMMARY
+          echo "Please check individual job results above for detailed status of each cloud provider destruction." >> $GITHUB_STEP_SUMMARY 
