@@ -72,6 +72,7 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2-sg"
   description = "Allow HTTP and SSH"
