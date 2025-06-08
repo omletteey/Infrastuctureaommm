@@ -62,6 +62,7 @@ jobs:
     name: 'Terraform Validate'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         cloud_provider: [AWS, AZURE, GCP]
     
@@ -125,6 +126,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
     environment: PROD
     strategy:
+      fail-fast: false
       matrix:
         cloud_provider: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.cloud_provider)) || fromJson('["AWS", "AZURE", "GCP"]') }}
     
@@ -232,6 +234,7 @@ jobs:
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
     environment: PROD
     strategy:
+      fail-fast: false
       matrix:
         cloud_provider: ${{ github.event_name == 'workflow_dispatch' && fromJson(format('["{0}"]', github.event.inputs.cloud_provider)) || fromJson('["AWS", "AZURE", "GCP"]') }}
     
@@ -305,6 +308,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
     environment: PROD
     strategy:
+      fail-fast: false
       matrix:
         cloud_provider: ${{ github.event.inputs.cloud_provider == 'ALL' && fromJson('["AWS", "AZURE", "GCP"]') || fromJson(format('["{0}"]', github.event.inputs.cloud_provider)) }}
     
