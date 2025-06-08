@@ -412,34 +412,4 @@ jobs:
             echo "Please check the logs and resolve any issues before retrying." >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Create Destroy Issue
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const status = '${{ steps.destroy.outcome }}' === 'success' ? '✅ SUCCESS' : '❌ FAILED';
-            const title = `Infrastructure Destroy ${status} - ${{ matrix.cloud_provider }}`;
-            const body = `
-            ## 🚨 Infrastructure Destroy Report
-            
-            **Status:** ${status}
-            **Cloud Provider:** ${{ matrix.cloud_provider }}
-            **Environment:** ${{ github.event.inputs.environment }}
-            **Triggered by:** ${{ github.actor }}
-            **Timestamp:** ${new Date().toISOString()}
-            **Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            ${'${{ steps.destroy.outcome }}' === 'success' 
-              ? '✅ All infrastructure resources have been successfully destroyed.' 
-              : '❌ Infrastructure destruction failed. Please check the workflow logs for details.'}
-            
-            **⚠️ This is a critical infrastructure change. Please verify the results.**
-            `;
-            
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['infrastructure', 'destroy', 'critical', '${{ matrix.cloud_provider }}']
-            })
+  
