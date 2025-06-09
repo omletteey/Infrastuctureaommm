@@ -112,6 +112,7 @@ resource "aws_launch_template" "ec2_template" {
   image_id      = "ami-0c1907b6d738188e5"
   instance_type = "t3.medium"
 
+
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
