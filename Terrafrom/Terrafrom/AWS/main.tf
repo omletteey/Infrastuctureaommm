@@ -126,6 +126,8 @@ resource "aws_launch_template" "ec2_template" {
   }
 
 
+
+
   user_data = base64encode(<<-EOF
               #!/bin/bash
               echo "Provision started at $(date)" >> /var/log/provision.log
