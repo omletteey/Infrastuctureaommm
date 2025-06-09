@@ -107,15 +107,7 @@ resource "azurerm_lb_rule" "http_rule" {
   #   backend_address_pool_id        = azurerm_lb_backend_address_pool.bpepool.id
   probe_id = azurerm_lb_probe.http_probe.id
 }
-resource "azurerm_lb_rule" "ssh_rule" {
-  name                           = "ssh-rule"
-  loadbalancer_id                = azurerm_lb.main.id
-  protocol                       = "Tcp"
-  frontend_port                  = 22
-  backend_port                   = 22
-  frontend_ip_configuration_name = "PublicLBFront"
-  probe_id                       = azurerm_lb_probe.http_probe.id # optional
-}
+
 
 # Availability Set
 resource "azurerm_availability_set" "vm_as" {
