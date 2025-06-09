@@ -1,4 +1,3 @@
-
 # Terraform configuration is managed in backend.tf
 # Provider configuration is managed in backend.tf
 
@@ -23,6 +22,12 @@ resource "azurerm_subnet" "public" {
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = [cidrsubnet("10.0.0.0/16", 8, count.index + 1)]
+}
+
+# Associate Network Security Group to the first subnet (where VMSS is deployed)
+resource "azurerm_subnet_network_security_group_association" "main" {
+  subnet_id                 = azurerm_subnet.public[0].id
+  network_security_group_id = azurerm_network_security_group.vm_sg.id
 }
 
 # Network Security Group for VM
@@ -98,14 +103,13 @@ resource "azurerm_lb_probe" "http_probe" {
 # Load Balancer Rule
 resource "azurerm_lb_rule" "http_rule" {
   name                           = "http-rule"
-  #   resource_group_name            = azurerm_resource_group.main.name
   loadbalancer_id                = azurerm_lb.main.id
   protocol                       = "Tcp"
   frontend_port                  = 80
   backend_port                   = 80
   frontend_ip_configuration_name = "PublicLBFront"
-  #   backend_address_pool_id        = azurerm_lb_backend_address_pool.bpepool.id
-  probe_id = azurerm_lb_probe.http_probe.id
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
+  probe_id                       = azurerm_lb_probe.http_probe.id
 }
 
 
@@ -168,12 +172,21 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
               echo "Provision started at $(date)" >> /var/log/provision.log
               apt-get update -y
               apt-get install nginx -y
+              
+              # Create a custom index page to verify load balancer is working
+              echo "<h1>Hello from Azure VM Scale Set!</h1>" > /var/www/html/index.html
+              echo "<p>Server: $(hostname)</p>" >> /var/www/html/index.html
+              echo "<p>Timestamp: $(date)</p>" >> /var/www/html/index.html
+              
               systemctl enable nginx
               systemctl start nginx
+              
+              # Install Docker
               curl -fsSL https://get.docker.com -o get-docker.sh
               sh get-docker.sh
-              usermod -aG docker $USER
-              apt-get install docker-compose-plugin
+              usermod -aG docker azureuser
+              apt-get install docker-compose-plugin -y
+              
               echo "Provision finished at $(date)" >> /var/log/provision.log
             EOF
   )
@@ -214,6 +227,26 @@ resource "azurerm_monitor_autoscale_setting" "vmss_scale" {
         cooldown  = "PT5M"
       }
     }
+
+    rule {
+      metric_trigger {
+        metric_name        = "Percentage CPU"
+        metric_resource_id = azurerm_linux_virtual_machine_scale_set.vmss.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 30
+      }
+
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT5M"
+      }
+    }
   }
 
   # notification {
@@ -224,4 +257,15 @@ resource "azurerm_monitor_autoscale_setting" "vmss_scale" {
   # }
   
   
+}
+
+# Output the Load Balancer Public IP
+output "load_balancer_public_ip" {
+  description = "Public IP address of the Load Balancer"
+  value       = azurerm_public_ip.lb_ip.ip_address
+}
+
+output "load_balancer_fqdn" {
+  description = "FQDN of the Load Balancer"
+  value       = azurerm_public_ip.lb_ip.fqdn
 }
