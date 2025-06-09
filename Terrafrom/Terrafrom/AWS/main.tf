@@ -107,10 +107,16 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
+resource "aws_key_pair" "default" {
+  key_name   = "dev-key"
+  public_key = file("adminterra.pub")
+}
+
 resource "aws_launch_template" "ec2_template" {
   name_prefix   = "ec2-autoscale-template-"
   image_id      = "ami-0c1907b6d738188e5"
   instance_type = "t3.medium"
+  key_name      = aws_key_pair.default.key_name
 
 
   block_device_mappings {
@@ -134,6 +140,7 @@ resource "aws_launch_template" "ec2_template" {
               apt-get install nginx -y
               systemctl enable nginx
               systemctl start nginx
+              
               echo "Provision finished at $(date)" >> /var/log/provision.log
             EOF
   )

@@ -126,7 +126,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
   sku                 = "Standard_B2s"
   instances           = 3
   admin_username      = "azureuser"
-  admin_password      = "Password1234!"
+  
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("adminterra.pub")
+  }
+
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
@@ -137,7 +142,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
   #   subnet_id                   = azurerm_subnet.public[0].id
   upgrade_mode                    = "Manual"
   overprovision                   = true
-  disable_password_authentication = false
+  disable_password_authentication = true
 
   network_interface {
     name    = "vmss-nic"

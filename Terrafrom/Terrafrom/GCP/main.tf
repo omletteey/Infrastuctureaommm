@@ -60,6 +60,10 @@ resource "google_compute_instance_template" "default" {
     access_config {}
   }
 
+  metadata = {
+    ssh-keys = "gcpuser:${file("adminterra.pub")}"
+  }
+
   metadata_startup_script = <<-EOF
     #!/bin/bash
     apt-get update -y
