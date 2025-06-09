@@ -97,7 +97,7 @@ resource "azurerm_lb_probe" "http_probe" {
 
 # Load Balancer Rule
 resource "azurerm_lb_rule" "http_rule" {
-  name = "http-rule"
+  name                           = "http-rule"
   #   resource_group_name            = azurerm_resource_group.main.name
   loadbalancer_id                = azurerm_lb.main.id
   protocol                       = "Tcp"
@@ -106,6 +106,15 @@ resource "azurerm_lb_rule" "http_rule" {
   frontend_ip_configuration_name = "PublicLBFront"
   #   backend_address_pool_id        = azurerm_lb_backend_address_pool.bpepool.id
   probe_id = azurerm_lb_probe.http_probe.id
+}
+resource "azurerm_lb_rule" "ssh_rule" {
+  name                           = "ssh-rule"
+  loadbalancer_id                = azurerm_lb.main.id
+  protocol                       = "Tcp"
+  frontend_port                  = 22
+  backend_port                   = 22
+  frontend_ip_configuration_name = "PublicLBFront"
+  probe_id                       = azurerm_lb_probe.http_probe.id # optional
 }
 
 # Availability Set
@@ -169,6 +178,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
               apt-get install nginx -y
               systemctl enable nginx
               systemctl start nginx
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sh get-docker.sh
+              usermod -aG docker $USER
+              apt-get install docker-compose-plugin
               echo "Provision finished at $(date)" >> /var/log/provision.log
             EOF
   )
