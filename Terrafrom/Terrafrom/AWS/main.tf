@@ -107,7 +107,6 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
-
 resource "aws_launch_template" "ec2_template" {
   name_prefix   = "ec2-autoscale-template-"
   image_id      = "ami-0c1907b6d738188e5"
