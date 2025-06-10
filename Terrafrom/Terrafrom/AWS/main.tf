@@ -138,8 +138,20 @@ resource "aws_launch_template" "ec2_template" {
               echo "Provision started at $(date)" >> /var/log/provision.log
               apt-get update -y
               apt-get install nginx -y
+              
+              # Create a custom index page to verify load balancer is working
+              echo "<h1>Hello from Azure VM Scale Set!</h1>" > /var/www/html/index.html
+              echo "<p>Server: $(hostname)</p>" >> /var/www/html/index.html
+              echo "<p>Timestamp: $(date)</p>" >> /var/www/html/index.html
+              
               systemctl enable nginx
               systemctl start nginx
+              
+              # Install Docker
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sh get-docker.sh
+              usermod -aG docker azureuser
+              apt-get install docker-compose-plugin -y
               
               echo "Provision finished at $(date)" >> /var/log/provision.log
             EOF
