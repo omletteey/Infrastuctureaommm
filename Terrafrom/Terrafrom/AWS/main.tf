@@ -147,7 +147,7 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
 }
 
 resource "aws_launch_template" "ec2_template" {
-  name_prefix   = "ec2-autoscale-template-"
+  name_prefix   = "ec2-autoscale-template"
   image_id      = "ami-0c1907b6d738188e5"
   instance_type = "t3.medium"
   key_name      = aws_key_pair.default.key_name
@@ -188,7 +188,7 @@ resource "aws_launch_template" "ec2_template" {
               # Install Docker
               curl -fsSL https://get.docker.com -o get-docker.sh
               sh get-docker.sh
-              usermod -aG docker azureuser
+              usermod -aG docker ubuntu
               apt-get install docker-compose-plugin -y
               
               echo "Provision finished at $(date)" >> /var/log/provision.log

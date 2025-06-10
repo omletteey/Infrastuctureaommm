@@ -81,7 +81,7 @@ resource "google_compute_instance_template" "default" {
       # Install Docker
       curl -fsSL https://get.docker.com -o get-docker.sh
       sh get-docker.sh
-      usermod -aG docker azureuser
+      usermod -aG docker gcpuser
       apt-get install docker-compose-plugin -y
       
       echo "Provision finished at $(date)" >> /var/log/provision.log
