@@ -112,12 +112,50 @@ resource "aws_key_pair" "default" {
   public_key = file("adminterra.pub")
 }
 
+# Create IAM role for EC2 instances to use SSM
+resource "aws_iam_role" "ec2_ssm_role" {
+  name = "ec2-ssm-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "ec2-ssm-role"
+  }
+}
+
+# Attach the AmazonSSMManagedInstanceCore policy to the role
+resource "aws_iam_role_policy_attachment" "ec2_ssm_policy" {
+  role       = aws_iam_role.ec2_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Create instance profile for the IAM role
+resource "aws_iam_instance_profile" "ec2_ssm_profile" {
+  name = "ec2-ssm-profile"
+  role = aws_iam_role.ec2_ssm_role.name
+}
+
 resource "aws_launch_template" "ec2_template" {
   name_prefix   = "ec2-autoscale-template-"
   image_id      = "ami-0c1907b6d738188e5"
   instance_type = "t3.medium"
   key_name      = aws_key_pair.default.key_name
 
+  # Add IAM instance profile for SSM
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ec2_ssm_profile.name
+  }
 
   block_device_mappings {
     device_name = "/dev/xvda"
