@@ -147,7 +147,7 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
 }
 
 resource "aws_launch_template" "ec2_template" {
-  name_prefix   = "ec2-autoscale-template"
+  name          = "ec2-autoscale-template"
   image_id      = "ami-0c1907b6d738188e5"
   instance_type = "t3.medium"
   key_name      = aws_key_pair.default.key_name
