@@ -15,6 +15,7 @@ resource "azurerm_virtual_network" "vnet" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
+
 # Subnets (3 subnets in different availability zones)
 resource "azurerm_subnet" "public" {
   count                = 3
