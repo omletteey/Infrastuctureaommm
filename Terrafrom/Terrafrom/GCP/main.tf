@@ -24,6 +24,7 @@ resource "google_compute_firewall" "allow_http" {
     ports    = ["80"]
   }
 
+
   source_ranges = ["0.0.0.0/0"]
 
   depends_on = [google_compute_network.main]
