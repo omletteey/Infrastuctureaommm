@@ -49,6 +49,8 @@ resource "azurerm_network_security_group" "vm_sg" {
     destination_address_prefix = "*"
   }
 
+
+
   security_rule {
     name                       = "AllowSSH"
     priority                   = 110
