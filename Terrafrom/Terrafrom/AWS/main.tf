@@ -67,7 +67,7 @@ data "aws_ami" "ubuntu" {
 
 
   filter {
-    name   = "name"
+    name   = "name"    gcloud auth activate-service-account --key-file="path\to\phrasal-aegis-376702-3d80e548507d.json"
     values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 }
