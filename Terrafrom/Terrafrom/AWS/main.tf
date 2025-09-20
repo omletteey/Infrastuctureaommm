@@ -1,3 +1,41 @@
+# Secure Security Group for Web Server (Best Practice)
+resource "aws_security_group" "web_sg" {
+  name        = "secure-web-sg"
+  description = "Allow only HTTP/HTTPS from the internet, SSH from trusted IP"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow SSH from trusted IP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["203.0.113.10/32"] # เปลี่ยนเป็น IP ที่ต้องการ
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 # Provider configuration is managed in backend.tf
 
 # Get available AZs
