@@ -5,7 +5,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-
 # Create VPC
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
@@ -67,7 +66,7 @@ data "aws_ami" "ubuntu" {
 
 
   filter {
-    name   = "name"    gcloud auth activate-service-account --key-file="path\to\phrasal-aegis-376702-3d80e548507d.json"
+    name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 }
